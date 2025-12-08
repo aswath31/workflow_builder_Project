@@ -1,7 +1,6 @@
 package com.workflow_builder.trigger.repository;
 
-import com.workflow_builder.trigger.model.TriggerConfig;
-import com.workflow_builder.trigger.model.TriggerType;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
