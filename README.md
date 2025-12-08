@@ -12,9 +12,38 @@ Type-safe, graph-based workflow orchestrator built with Spring Boot, Project Rea
   - **ConditionNode**: Supports robust JSONPath expressions, including smart handling of equality checks (e.g., `$.status == 'SUCCESS'`).
 - **Global Exception Handling**: Standardized JSON error responses (404, 400, 409, 500) for a robust API contract.
 
+
 ## 🛠️ Architecture
 
 The engine follows the **Strategy Pattern**:
+
+```mermaid
+graph TD
+    User["User / API"] -->|POST /runs| Start["🏁 Start Run"]
+    Start --> Orch["🎼 OrchestratorService"]
+    
+    subgraph Execution Loop
+        Orch -->|Select Node| Reg["NodeExecutorRegistry"]
+        Reg -->|Get Executor| Exec["NodeExecutor Interface"]
+        
+        Exec -->|Dispatches To| HTTP["HttpNodeExecutor"]
+        Exec -->|Dispatches To| Cond["ConditionNodeExecutor"]
+        Exec -->|Dispatches To| Delay["DelayNodeExecutor"]
+        
+        HTTP -->|Execute & Return| Result["Result Summary"]
+        Cond -->|Evaluate & Return| Result
+        Delay -->|Wait & Return| Result
+        
+        Result -->|Propagate Output| Context["📦 Execution Context"]
+        Context -.->|Read Inputs| Exec
+    end
+    
+    Result -->|Success?| Next["Next Node"]
+    Result -->|Fail?| Retry["🔄 Retry / Backoff"]
+    Retry --> Orch
+    Next --> Orch
+```
+
 - **`OrchestratorService`**: The core brain. Traverses the node graph, manages state, and handles retries.
 - **`NodeExecutorRegistry`**: Selects the appropriate executor at runtime based on node type.
 - **`NodeExecutor` Interface**: All node types (`http`, `condition`, `delay`, `trigger`) implement this interface.
