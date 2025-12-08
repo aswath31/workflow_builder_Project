@@ -23,8 +23,23 @@ public class ConditionNodeExecutor implements NodeExecutor {
             Map<String, Object> context) {
         return CompletableFuture.supplyAsync(() -> {
             Map<String, Object> cfg = node.getConfig();
-            String expr = Optional.ofNullable(cfg.get("expression")).map(Object::toString).orElse("$");
-            Object operand = cfg.get("operand");
+            String rawExpr = Optional.ofNullable(cfg.get("expression")).map(Object::toString).orElse("$");
+            Object cfgOperand = cfg.get("operand");
+
+            String expr = rawExpr;
+            Object finalOperand = cfgOperand;
+
+            if (finalOperand == null && rawExpr.contains("==")) {
+                String[] parts = rawExpr.split("==", 2);
+                expr = parts[0].trim();
+                String opStr = parts[1].trim();
+
+                if ((opStr.startsWith("'") && opStr.endsWith("'"))
+                        || (opStr.startsWith("\"") && opStr.endsWith("\""))) {
+                    opStr = opStr.substring(1, opStr.length() - 1);
+                }
+                finalOperand = opStr;
+            }
 
             try {
                 // Merge context and input so we can access both via JsonPath
@@ -38,18 +53,18 @@ public class ConditionNodeExecutor implements NodeExecutor {
                 Object subject = JsonPath.read(mapper.writeValueAsString(data), expr);
                 boolean result = false;
 
-                if (operand != null) {
+                if (finalOperand != null) {
                     // Equality check
                     if (subject == null) {
-                        result = (operand == null);
+                        result = (finalOperand == null);
                     } else {
                         // Simple string-based comparison for now to handle mostly all cases
                         // or try strict equals first
-                        if (subject.equals(operand)) {
+                        if (subject.equals(finalOperand)) {
                             result = true;
                         } else {
                             // Fallback to string comparison (e.g. enum vs string, int vs double)
-                            result = String.valueOf(subject).equals(String.valueOf(operand));
+                            result = String.valueOf(subject).equals(String.valueOf(finalOperand));
                         }
                     }
                 } else {
