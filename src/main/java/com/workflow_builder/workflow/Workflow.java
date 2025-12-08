@@ -7,6 +7,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.Instant;
 import java.util.List;
 
+import jakarta.validation.constraints.NotBlank;
+
 @Getter
 @Setter
 @Builder
@@ -18,7 +20,9 @@ public class Workflow {
     @Id
     private String id;
 
-    private String ownerId; 
+    private String ownerId;
+
+    @NotBlank(message = "Name is required")
     private String name;
     private String description;
 

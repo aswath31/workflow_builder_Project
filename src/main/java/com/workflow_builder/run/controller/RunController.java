@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-
 @RestController
 @RequestMapping("/api/v1/runs")
 @RequiredArgsConstructor
@@ -20,24 +19,27 @@ public class RunController {
     @GetMapping("/{runId}")
     public ResponseEntity<?> getRun(@PathVariable String runId) {
         Run r = runService.getRun(runId);
+        if (r == null) {
+            throw new com.workflow_builder.exception.ResourceNotFoundException("Run not found with id: " + runId);
+        }
         return ResponseEntity.ok(r);
     }
 
     @PostMapping("/{runId}/retry")
-public ResponseEntity<?> retryRun(@PathVariable String runId) {
+    public ResponseEntity<?> retryRun(@PathVariable String runId) {
 
-    Run r = runService.getRun(runId);
-    r.setStatus("queued");
-    r.setStartTime(null);
-    r.setEndTime(null);
-    r.setAttempts(r.getAttempts() + 1);
+        Run r = runService.getRun(runId);
+        r.setStatus("queued");
+        r.setStartTime(null);
+        r.setEndTime(null);
+        r.setAttempts(r.getAttempts() + 1);
 
-    runService.save(r);
+        runService.save(r);
 
-    orchestratorService.processRun(r.getId()); // async automatically
+        orchestratorService.processRun(r.getId()); // async automatically
 
-    return ResponseEntity.accepted()
-            .body(Map.of("runId", r.getId(), "status", "queued"));
-}
+        return ResponseEntity.accepted()
+                .body(Map.of("runId", r.getId(), "status", "queued"));
+    }
 
 }
