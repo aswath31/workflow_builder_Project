@@ -62,7 +62,7 @@ graph TD
 - Java 17 SDK
 - MongoDB running on `localhost:27017`
 
-### Build & Run
+### Build & Run (Local)
 ```bash
 # Build
 mvn clean install
@@ -70,6 +70,16 @@ mvn clean install
 # Run
 mvn spring-boot:run
 ```
+
+### 🐳 Run with Docker
+
+You can run the entire stack (App + MongoDB) with one command:
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at `http://localhost:8080`.
 
 ## 🔌 API Reference
 
