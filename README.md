@@ -1,4 +1,4 @@
-# WorkFlow Builder - Resilient Workflow Engine
+# WorkFlow Builder - Resilient Workflow Engine.
 
 Type-safe, graph-based workflow orchestrator built with Spring Boot, Project Reactor, and MongoDB. Designed for high resilience, smart execution, and developer-friendly extensibility.
 
